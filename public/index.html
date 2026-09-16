@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minor / Patch Manager</title>
+    <script>
+      // Apply the saved (or system) theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var saved = localStorage.getItem("mpm-theme");
+          var theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>📦</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">📦</span>
+        <div>
+          <h1>Minor / Patch Manager</h1>
+          <p class="tagline">Safe dependency upgrades with a security diff</p>
+        </div>
+      </div>
+      <button id="theme-toggle" class="btn ghost theme-toggle" aria-label="Toggle light/dark theme" title="Toggle light/dark theme">🌙</button>
+    </header>
+
+    <main class="container">
+      <section class="controls card">
+        <div class="control path-control">
+          <label>Project path</label>
+          <div class="path-row">
+            <input id="path-input" type="text" placeholder="/path/to/your/project" spellcheck="false" />
+            <button id="browse-btn" class="btn ghost">Browse…</button>
+          </div>
+          <span id="path-hint" class="hint"></span>
+        </div>
+
+        <div class="control cooldown-control">
+          <label>
+            Cooldown
+            <span class="cooldown-value"><span id="cooldown-num">0</span> days</span>
+          </label>
+          <input id="cooldown" type="range" min="0" max="90" step="1" value="0" />
+          <span class="hint">Ignore versions published fewer than this many days ago.</span>
+        </div>
+
+        <button id="scan-btn" class="btn primary" disabled>Scan</button>
+      </section>
+
+      <section id="status" class="status hidden"></section>
+
+      <section id="summary" class="summary hidden"></section>
+
+      <section id="toolbar" class="toolbar hidden">
+        <div class="filters">
+          <label class="chk"><input type="checkbox" id="filter-select-all" /> Select all</label>
+          <div class="segmented" id="type-filter">
+            <button data-filter="all" class="active">All</button>
+            <button data-filter="patch">Patch</button>
+            <button data-filter="minor">Minor</button>
+            <button data-filter="security">Security‑relevant</button>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button id="history-btn" class="btn ghost">History</button>
+          <button id="apply-btn" class="btn primary" disabled>Apply selected</button>
+        </div>
+      </section>
+
+      <section id="results" class="results"></section>
+    </main>
+
+    <!-- Folder browser modal -->
+    <div id="browser" class="modal hidden">
+      <div class="modal-box card">
+        <div class="modal-head">
+          <h2>Select a project folder</h2>
+          <button id="browser-close" class="btn ghost small">✕</button>
+        </div>
+        <div class="crumbs">
+          <button id="browser-up" class="btn ghost small">⬆ Up</button>
+          <button id="browser-home" class="btn ghost small">🏠 Home</button>
+          <code id="browser-path"></code>
+        </div>
+        <ul id="browser-list" class="browser-list"></ul>
+        <div class="modal-foot">
+          <span id="browser-pkg" class="hint"></span>
+          <button id="browser-select" class="btn primary" disabled>Use this folder</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Snapshots / revert modal -->
+    <div id="snapshots-modal" class="modal hidden">
+      <div class="modal-box card">
+        <div class="modal-head">
+          <h2>Snapshots</h2>
+          <button id="snapshots-close" class="btn ghost small">✕</button>
+        </div>
+        <p class="hint" id="snapshots-hint">
+          A snapshot of package.json and any lockfile is saved automatically before each apply.
+          Restore one to revert.
+        </p>
+        <ul id="snapshots-list" class="snapshots-list"></ul>
+      </div>
+    </div>
+
+    <!-- Apply result modal -->
+    <div id="apply-modal" class="modal hidden">
+      <div class="modal-box card">
+        <div class="modal-head">
+          <h2>Apply results</h2>
+          <button id="apply-close" class="btn ghost small">✕</button>
+        </div>
+        <div id="apply-body" class="apply-body"></div>
+      </div>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
